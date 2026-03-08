@@ -27,23 +27,41 @@ async function main() {
             themeId: 'modern',
             isPublished: true,
             content: {
-                hero: {
-                    headline: "Build Faster with SaaS Builder",
-                    subheadline: "The easiest way to create and manage your landing pages without writing code.",
-                    ctaText: "Get Started Free",
-                    ctaUrl: "#pricing"
-                },
-                features: [
-                    { id: "f1", title: "Visual Editor", description: "See your changes in real-time." },
-                    { id: "f2", title: "Theme Engine", description: "Switch between gorgeous themes instantly." },
-                    { id: "f3", title: "Fast Performance", description: "Next.js routing edge-ready out of the box." },
-                ],
-                pricing: [
-                    { id: "p1", tierName: "Starter", price: "Free", features: ["1 Page", "Basic Theme"], isPopular: false, ctaText: "Start Free", ctaUrl: "#" },
-                    { id: "p2", tierName: "Pro", price: "$29/mo", features: ["Unlimited Pages", "Premium Themes", "Custom Domain"], isPopular: true, ctaText: "Upgrade to Pro", ctaUrl: "#" },
-                ],
-                faq: [
-                    { id: "q1", question: "Can I use my own domain?", answer: "Yes, on the Pro plan you can connect any custom domain." }
+                sections: [
+                    {
+                        id: "hero-1",
+                        type: "hero",
+                        data: {
+                            headline: "Build Faster with SaaS Builder",
+                            subheadline: "The easiest way to create and manage your landing pages without writing code.",
+                            ctaText: "Get Started Free",
+                            ctaUrl: "#pricing"
+                        }
+                    },
+                    {
+                        id: "feat-1",
+                        type: "features",
+                        data: [
+                            { id: "f1", title: "Visual Editor", description: "See your changes in real-time." },
+                            { id: "f2", title: "Theme Engine", description: "Switch between gorgeous themes instantly." },
+                            { id: "f3", title: "Fast Performance", description: "Next.js routing edge-ready out of the box." },
+                        ]
+                    },
+                    {
+                        id: "price-1",
+                        type: "pricing",
+                        data: [
+                            { id: "p1", tierName: "Starter", price: "Free", features: ["1 Page", "Basic Theme"], isPopular: false, ctaText: "Start Free", ctaUrl: "#" },
+                            { id: "p2", tierName: "Pro", price: "$29/mo", features: ["Unlimited Pages", "Premium Themes", "Custom Domain"], isPopular: true, ctaText: "Upgrade to Pro", ctaUrl: "#" },
+                        ]
+                    },
+                    {
+                        id: "faq-1",
+                        type: "faq",
+                        data: [
+                            { id: "q1", question: "Can I use my own domain?", answer: "Yes, on the Pro plan you can connect any custom domain." }
+                        ]
+                    }
                 ],
                 footer: {
                     copyrightText: "© 2026 SaaS Builder Inc. All rights reserved."
@@ -62,18 +80,26 @@ async function main() {
             themeId: 'minimalist',
             isPublished: false,
             content: {
-                hero: {
-                    headline: "Jane Doe.",
-                    subheadline: "Designer & Developer based in New York.",
-                    ctaText: "View Work",
-                    ctaUrl: "#work"
-                },
-                features: [
-                    { id: "f1", title: "UX Design", description: "Crafting beautiful and functional user experiences." },
-                    { id: "f2", title: "Frontend", description: "Building robust applications with React and Next.js." },
+                sections: [
+                    {
+                        id: "hero-2",
+                        type: "hero",
+                        data: {
+                            headline: "Jane Doe.",
+                            subheadline: "Designer & Developer based in New York.",
+                            ctaText: "View Work",
+                            ctaUrl: "#work"
+                        }
+                    },
+                    {
+                        id: "feat-2",
+                        type: "features",
+                        data: [
+                            { id: "f1", title: "UX Design", description: "Crafting beautiful and functional user experiences." },
+                            { id: "f2", title: "Frontend", description: "Building robust applications with React and Next.js." },
+                        ]
+                    }
                 ],
-                pricing: [],
-                faq: [],
                 footer: {
                     copyrightText: "© 2026 Jane Doe."
                 }

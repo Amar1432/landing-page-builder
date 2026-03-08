@@ -41,12 +41,55 @@ export const FooterSchema = z.object({
   ).optional(),
 });
 
-export const PageContentSchema = z.object({
-  hero: HeroSchema,
-  features: z.array(FeatureSchema),
-  pricing: z.array(PricingTierSchema),
-  faq: z.array(FAQSchema),
-  footer: FooterSchema,
+// --- Dynamic Sections ---
+
+export const SectionTypeSchema = z.enum(["hero", "features", "pricing", "faq"]);
+
+export const BaseSectionSchema = z.object({
+  id: z.string(),
+  hidden: z.boolean().optional(),
 });
 
+export const PageSectionSchema = z.discriminatedUnion("type", [
+  BaseSectionSchema.extend({ type: z.literal("hero"), data: HeroSchema }),
+  BaseSectionSchema.extend({ type: z.literal("features"), data: z.array(FeatureSchema) }),
+  BaseSectionSchema.extend({ type: z.literal("pricing"), data: z.array(PricingTierSchema) }),
+  BaseSectionSchema.extend({ type: z.literal("faq"), data: z.array(FAQSchema) }),
+]);
+
+export const PageSettingsSchema = z.object({
+  accentColor: z.string().default('#3b82f6'),
+  fontFamily: z.enum(['sans', 'mono', 'serif']).default('sans'),
+  siteName: z.string().optional(),
+});
+
+export const PageContentSchema = z.object({
+  sections: z.array(PageSectionSchema),
+  footer: FooterSchema.optional(),
+});
+
+export type PageSettings = z.infer<typeof PageSettingsSchema>;
 export type PageContent = z.infer<typeof PageContentSchema>;
+export type PageSection = z.infer<typeof PageSectionSchema>;
+export type HeroData = z.infer<typeof HeroSchema>;
+export type FeatureData = z.infer<typeof FeatureSchema>;
+export type PricingData = z.infer<typeof PricingTierSchema>;
+export type FAQData = z.infer<typeof FAQSchema>;
+export type FooterData = z.infer<typeof FooterSchema>;
+export type SectionType = z.infer<typeof SectionTypeSchema>;
+
+// --- Default Data Factories ---
+
+export function createDefaultSection(type: SectionType): PageSection {
+  const id = `${type}-${Date.now()}`;
+  switch (type) {
+    case "hero":
+      return { id, type, data: { headline: "New Headline", ctaText: "Click Here", ctaUrl: "#" } };
+    case "features":
+      return { id, type, data: [{ id: `f-${Date.now()}`, title: "New Feature", description: "Describe this feature." }] };
+    case "pricing":
+      return { id, type, data: [{ id: `p-${Date.now()}`, tierName: "Basic", price: "$0", features: ["Feature 1"], isPopular: false, ctaText: "Get Started", ctaUrl: "#" }] };
+    case "faq":
+      return { id, type, data: [{ id: `q-${Date.now()}`, question: "New Question?", answer: "Answer goes here." }] };
+  }
+}

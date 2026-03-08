@@ -1,11 +1,15 @@
 import React from 'react';
-import { PageContent } from '@/lib/schema';
+import { HeroData, FeatureData, PricingData, FAQData, FooterData, PageSettings } from '@/lib/schema';
 
 export interface ThemeComponents {
-    Layout: React.FC<{ children: React.ReactNode; defaultFont?: string }>;
-    Hero: React.FC<PageContent['hero']>;
-    Features: React.FC<{ items: PageContent['features'] }>;
-    Pricing: React.FC<{ items: PageContent['pricing'] }>;
-    FAQ: React.FC<{ items: PageContent['faq'] }>;
-    Footer: React.FC<PageContent['footer']>;
+    Layout: React.FC<{ children: React.ReactNode; settings?: PageSettings }>;
+    blocks: {
+        hero: React.FC<HeroData>;
+        features: React.FC<{ items: FeatureData[] }>;
+        pricing: React.FC<{ items: PricingData[] }>;
+        faq: React.FC<{ items: FAQData[] }>;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [key: string]: React.FC<any> | undefined;
+    };
+    Footer: React.FC<FooterData>;
 }

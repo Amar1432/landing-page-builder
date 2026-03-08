@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getTheme } from "@/components/themes/registry";
-import { PageContent } from "@/lib/schema";
+import { PageContent, PageSettings } from "@/lib/schema";
 import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -9,9 +9,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!page) return { title: "Not Found" };
   
   const content = page.content as PageContent;
+  
+  // Find a hero section to extract a subheadline for SEO
+  const heroSection = content.sections?.find((s) => s.type === "hero");
+  const description = heroSection?.data?.subheadline || page.title;
+
   return {
     title: `${page.title} | Hosted by SaaS Builder`,
-    description: content.hero?.subheadline || page.title,
+    description,
   };
 }
 
@@ -22,14 +27,19 @@ export default async function PublishedPage({ params }: { params: Promise<{ slug
 
   const Theme = getTheme(page.themeId);
   const content = page.content as PageContent;
+  const settings = (page.settings as unknown as PageSettings) || { accentColor: '#3b82f6', fontFamily: 'sans' as const };
 
   return (
-    <Theme.Layout>
-      <Theme.Hero {...content.hero} />
-      {content.features?.length > 0 && <Theme.Features items={content.features} />}
-      {content.pricing?.length > 0 && <Theme.Pricing items={content.pricing} />}
-      {content.faq?.length > 0 && <Theme.FAQ items={content.faq} />}
-      <Theme.Footer {...content.footer} />
+    <Theme.Layout settings={settings}>
+      {content.sections?.filter(s => !s.hidden).map((section) => {
+        const BlockComponent = Theme.blocks?.[section.type] as React.FC<Record<string, unknown>>;
+        if (!BlockComponent) return null;
+
+        return <BlockComponent key={section.id} {...section.data} />;
+      })}
+      
+      {content.footer && <Theme.Footer {...content.footer} />}
     </Theme.Layout>
   );
 }
+

@@ -1,30 +1,40 @@
 # SaaS Landing Page Builder - Task Tracker
 
-This file contains the development tasks and roadmap for the SaaS landing page builder project.
+## Phase 1: Foundation ✅
+- [x] Initialize Next.js app, install deps, Prisma setup
+- [x] Define Zod schemas and database models
 
-## Project Details
-- **Description**: A headless, structured-content SaaS landing page builder with swappable themes.
-- **Tech Stack**: Next.js App Router, React 19, TypeScript, Tailwind CSS 4, Bun, PostgreSQL, Prisma ORM.
+## Phase 2: Theme Framework Engine ✅
+- [x] ThemeComponents typings, ThemeRegistry, dummy themes
 
-## Phase 1: Foundation (Current)
-- [x] Initialize Next.js app (Tailwind, TypeScript, App Router).
-- [x] Install dependencies (Prisma, Zod, clsx, tailwind-merge, lucide-react).
-- [x] Initialize Prisma and set up `gemini.md` / `task.md`.
-- [x] Define Zod schemas for the structure content.
-- [x] Implement Prisma Database Schema (`User`, `Page`).
-- [x] Create basic `lib/prisma.ts` connection utility.
+## Phase 3: The Builder Interface ✅
+- [x] Dashboard, Editor View, Live preview
 
-## Phase 2: Theme Framework Engine
-- [x] Create `ThemeComponents` typings.
-- [x] Implement the `ThemeRegistry`.
-- [x] Create dummy themes (`modern` and `minimalist`).
+## Phase 4: Publishing & Edge Delivery ✅
+- [x] Dynamic routing, ISR, SEO metadata
 
-## Phase 3: The Builder Interface
-- [x] Build the Dashboard to list pages and manage settings.
-- [x] Create the Editor View (Left sidebar form inputs mapped to schema).
-- [x] Live context rendering using split view / dynamic state.
+## Phase 5: Dynamic Sections Refactor ✅
+- [x] Discriminated union schemas, dynamic block rendering
 
-## Phase 4: Publishing & Edge Delivery
-- [x] Implement `/[slug]/page.tsx` dynamic routing.
-- [x] Apply caching and Next.js revalidation (ISR).
-- [x] SEO Metadata handling.
+## Phase 6: Enhanced Editor & Section Management ✅
+- [x] Section CRUD, drag-and-drop, visibility toggles
+
+## Phase 7: Additional Themes & Polish ✅
+- [x] Bold theme, global settings, Clerk auth, create/delete pages
+- [x] Theme preview thumbnails → Theme Gallery Modal (scalable)
+
+## Phase 8: Product Features for Real Usage
+- [ ] 1. Prisma schema: Add `Lead` model + `headScript`/`bodyScript` to `Page`
+- [ ] 2. Zod schema: Add `LeadFormSchema`, `TestimonialSchema`, `ScriptInjectionSchema`
+- [ ] 3. Theme metadata: Add `ThemeMeta` + `ThemeEntry`, refactor registry
+- [ ] 4. Theme Gallery Modal: Refactor to data-driven from `getAllThemes()`
+- [ ] 5. Page Duplication: `duplicatePage` action + dashboard UI
+- [ ] 6. Script Injection: `ScriptEditor.tsx` + Settings tab integration
+- [ ] 7. Script rendering: Inject scripts into `[slug]/page.tsx`
+- [ ] 8. Demo viewer: `demo-data.ts` + `/demo/[themeId]` route
+- [ ] 9. Lead form block: Add to all 3 themes + `LeadFormEditor.tsx`
+- [ ] 10. Lead API + Dashboard: `POST /api/leads` + `/dashboard/leads` page
+- [ ] 11. Testimonials block: Add to all 3 themes + `TestimonialsEditor.tsx`
+- [ ] 12. Image Upload: Integrate UploadThing + `ImageUpload.tsx` widget
+- [ ] 13. AI Content Generation: API route + "AI Generate" button in editor
+- [ ] 14. Build + lint verification

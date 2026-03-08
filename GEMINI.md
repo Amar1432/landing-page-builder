@@ -6,13 +6,14 @@ This project is a headless, structured-content SaaS landing page builder with sw
 
 - **Purpose**: A platform for building and hosting structured SaaS landing pages.
 - **Architecture**: Next.js App Router with React 19 and TypeScript.
-- **State**: Currently in Phase 1 (Foundation). Database schema and content validation schemas are defined.
+- **State**: Phase 6 Complete. The project has a fully functional editor with dynamic section management, drag-and-drop reordering, and theme swapping.
 - **Key Technologies**:
     - **Framework**: Next.js 16.1.6 (App Router)
     - **Styling**: Tailwind CSS 4
     - **Database**: PostgreSQL with Prisma ORM 7.4.2
-    - **Validation**: Zod (for structured page content)
+    - **Validation**: Zod (for dynamic section content)
     - **Runtime**: Bun
+    - **Interactivity**: Lucide icons, Drag-and-drop section management
 
 ## Building and Running
 
@@ -50,10 +51,14 @@ This project is a headless, structured-content SaaS landing page builder with sw
 - **Type Safety**: Maintain strict TypeScript typing. Ensure `PageContent` type is used when handling page data.
 - **Components**: Follow a component-based architecture in `src/app`. Future phases will introduce a `ThemeRegistry` for swappable UI components.
 
-## Roadmap (Summary)
-1. **Foundation**: App setup, DB schema, Zod validation (Current).
-2. **Theme Framework**: Component typings and Theme Registry.
-3. **Builder Interface**: Dashboard and Live Editor.
-4. **Publishing**: Dynamic routing and Edge delivery.
+## Roadmap (Current Progress)
+
+- [x] **Phase 1: Foundation**: App setup, DB schema, Zod validation.
+- [x] **Phase 2: Theme Framework Engine**: Theme Registry and component typings.
+- [x] **Phase 3: The Builder Interface**: Dashboard and live editor view.
+- [x] **Phase 4: Publishing & Edge Delivery**: Dynamic routing, ISR, and metadata.
+- [x] **Phase 5: Dynamic Sections Refactor**: Discriminated union schemas for flexible page blocks.
+- [x] **Phase 6: Enhanced Editor & Section Management**: Drag-and-drop, section CRUD, and refined UX.
+- [ ] **Phase 7: Additional Themes & Polish**: New themes, global settings, and user auth.
 
 Refer to `task.md` for a detailed task list and progress tracking.

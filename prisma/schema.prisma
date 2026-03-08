@@ -21,6 +21,7 @@ model Page {
   title       String
   themeId     String   @default("modern") 
   content     Json     // Stores the structured PageContent JSON
+  settings    Json?    // Stores global settings (fonts, colors, etc.)
   isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
