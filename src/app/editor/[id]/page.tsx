@@ -19,9 +19,11 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
     redirect("/dashboard");
   }
 
+  const isAiEnabled = !!process.env.OPENAI_API_KEY;
+
   return (
     <main className="h-screen w-full bg-slate-900 overflow-hidden">
-      <EditorClient initialPage={page} />
+      <EditorClient initialPage={page} isAiEnabled={isAiEnabled} />
     </main>
   );
 }

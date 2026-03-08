@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { PlusCircle, Search, LayoutTemplate, Trash2, ExternalLink, Edit2, Loader2 } from "lucide-react";
-import { createPage, deletePage } from "@/lib/actions";
+import { PlusCircle, Search, LayoutTemplate, Trash2, ExternalLink, Edit2, Loader2, Copy, Mail } from "lucide-react";
+import { createPage, deletePage, duplicatePage } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import type { Page } from "@prisma/client";
 
@@ -17,6 +17,7 @@ export function DashboardClient({ initialPages, userId, userName }: DashboardCli
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreating, startCreating] = useTransition();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const router = useRouter();
 
   const filteredPages = initialPages.filter(page => 
@@ -44,6 +45,19 @@ export function DashboardClient({ initialPages, userId, userName }: DashboardCli
     setDeletingId(null);
   };
 
+  const handleDuplicate = async (id: string) => {
+    setDuplicatingId(id);
+    try {
+      const newId = await duplicatePage(id);
+      router.push(`/editor/${newId}`);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to duplicate page");
+    } finally {
+      setDuplicatingId(null);
+    }
+  };
+
   return (
     <>
       <header className="flex justify-between items-center mb-12">
@@ -51,14 +65,23 @@ export function DashboardClient({ initialPages, userId, userName }: DashboardCli
           <h1 className="text-3xl font-extrabold tracking-tight">Dashboard</h1>
           <p className="text-slate-500 mt-1">Welcome back, <span className="text-slate-900 font-medium">{userName}</span></p>
         </div>
-        <button 
-          onClick={handleCreate}
-          disabled={isCreating}
-          className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50"
-        >
-          {isCreating ? <Loader2 size={20} className="animate-spin" /> : <PlusCircle size={20} />}
-          Create New Page
-        </button>
+        <div className="flex items-center gap-3">
+          <Link 
+            href="/dashboard/leads"
+            className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-lg font-medium transition-colors shadow-sm"
+          >
+            <Mail size={20} className="text-slate-400" />
+            View Leads
+          </Link>
+          <button 
+            onClick={handleCreate}
+            disabled={isCreating}
+            className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50"
+          >
+            {isCreating ? <Loader2 size={20} className="animate-spin" /> : <PlusCircle size={20} />}
+            Create New Page
+          </button>
+        </div>
       </header>
 
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
@@ -110,15 +133,23 @@ export function DashboardClient({ initialPages, userId, userName }: DashboardCli
                   className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-slate-700 border border-slate-200 rounded-lg hover:bg-white hover:border-slate-300 hover:shadow-sm transition-all"
                 >
                   <Edit2 size={16} />
-                  Edit Content
+                  Edit
                 </Link>
+                <button 
+                  onClick={() => handleDuplicate(page.id)}
+                  disabled={duplicatingId === page.id}
+                  className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all disabled:opacity-50"
+                  title="Duplicate Page"
+                >
+                  {duplicatingId === page.id ? <Loader2 size={18} className="animate-spin" /> : <Copy size={18} />}
+                </button>
                 <Link 
                   href={`/${page.slug}`}
                   target="_blank"
                   className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-all"
                 >
                   <ExternalLink size={16} />
-                  View Live
+                  View
                 </Link>
                 <button 
                   onClick={() => handleDelete(page.id, page.title)}

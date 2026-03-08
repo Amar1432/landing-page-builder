@@ -1,6 +1,7 @@
 "use client";
 
 import type { HeroData } from "@/lib/schema";
+import { ImageUpload } from "./ImageUpload";
 
 interface HeroEditorProps {
   data: HeroData;
@@ -51,6 +52,11 @@ export function HeroEditor({ data, onChange }: HeroEditorProps) {
           />
         </div>
       </div>
+      <ImageUpload
+        label="Hero Image (Optional)"
+        value={data.imageUrl || ""}
+        onChange={(url) => update("imageUrl", url)}
+      />
     </>
   );
 }

@@ -22,9 +22,25 @@ model Page {
   themeId     String   @default("modern") 
   content     Json     // Stores the structured PageContent JSON
   settings    Json?    // Stores global settings (fonts, colors, etc.)
+  headScript  String?  // Custom scripts for <head>
+  bodyScript  String?  // Custom scripts for <body>
   isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   user        User     @relation(fields: [userId], references: [id])
+  leads       Lead[]
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  pageId    String
+  name      String
+  email     String?
+  phone     String
+  message   String?
+  data      Json?    // For custom fields
+  createdAt DateTime @default(now())
+
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
 }

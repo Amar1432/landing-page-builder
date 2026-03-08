@@ -5,9 +5,9 @@ import { PageContentSchema, PageContent, PageSettingsSchema, PageSettings } from
 import { revalidatePath } from "next/cache";
 
 export async function updatePage(
-  id: string,
-  themeId: string,
-  content: PageContent,
+  id: string, 
+  themeId: string, 
+  content: PageContent, 
   settings?: PageSettings
 ) {
   const validatedContent = PageContentSchema.parse(content);
@@ -17,9 +17,7 @@ export async function updatePage(
     where: { id },
     data: {
       themeId,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       content: validatedContent as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       settings: validatedSettings as any,
     },
   });
@@ -49,7 +47,7 @@ export async function createPage(title: string, userId: string) {
   const baseSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   const timestamp = Date.now().toString().slice(-4);
   const slug = `${baseSlug}-${timestamp}`;
-
+  
   const page = await prisma.page.create({
     data: {
       title,
@@ -59,7 +57,6 @@ export async function createPage(title: string, userId: string) {
       settings: {
         accentColor: '#3b82f6',
         fontFamily: 'sans'
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
       content: {
         sections: [
@@ -77,7 +74,6 @@ export async function createPage(title: string, userId: string) {
         footer: {
           copyrightText: `© ${new Date().getFullYear()} ${title}`
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any
     }
   });
@@ -93,4 +89,26 @@ export async function deletePage(id: string) {
 
   revalidatePath("/dashboard");
   revalidatePath(`/${page.slug}`);
+}
+
+export async function duplicatePage(id: string) {
+  const source = await prisma.page.findUnique({ where: { id } });
+  if (!source) throw new Error("Page not found");
+
+  const newSlug = `${source.slug}-copy-${Date.now().toString().slice(-4)}`;
+  
+  const page = await prisma.page.create({
+    data: {
+      title: `${source.title} (Copy)`,
+      slug: newSlug,
+      userId: source.userId,
+      themeId: source.themeId,
+      content: source.content || {},
+      settings: source.settings || {},
+      isPublished: false,
+    }
+  });
+
+  revalidatePath("/dashboard");
+  return page.id;
 }

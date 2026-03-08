@@ -8,15 +8,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const page = await prisma.page.findUnique({ where: { slug } });
   if (!page) return { title: "Not Found" };
   
-  const content = page.content as PageContent;
-  
-  // Find a hero section to extract a subheadline for SEO
-  const heroSection = content.sections?.find((s) => s.type === "hero");
-  const description = heroSection?.data?.subheadline || page.title;
+  const content = page.content as unknown as PageContent;
+  const settings = (page.settings as unknown as PageSettings) || {};
 
   return {
-    title: `${page.title} | Hosted by SaaS Builder`,
-    description,
+    title: settings.siteName || `${page.title} | SaaS Builder`,
+    description: page.title,
   };
 }
 
@@ -26,20 +23,35 @@ export default async function PublishedPage({ params }: { params: Promise<{ slug
   if (!page || !page.isPublished) notFound();
 
   const Theme = getTheme(page.themeId);
-  const content = page.content as PageContent;
-  const settings = (page.settings as unknown as PageSettings) || { accentColor: '#3b82f6', fontFamily: 'sans' as const };
+  const content = page.content as unknown as PageContent;
+  const settings = (page.settings as unknown as PageSettings) || { accentColor: "#3b82f6", fontFamily: "sans" };
+  const sections = content.sections || [];
 
   return (
-    <Theme.Layout settings={settings}>
-      {content.sections?.filter(s => !s.hidden).map((section) => {
-        const BlockComponent = Theme.blocks?.[section.type] as React.FC<Record<string, unknown>>;
-        if (!BlockComponent) return null;
-
-        return <BlockComponent key={section.id} {...section.data} />;
-      })}
+    <>
+      {/* Head Script Injection */}
+      {settings.headScript && (
+        <script 
+          dangerouslySetInnerHTML={{ __html: settings.headScript }}
+        />
+      )}
       
-      {content.footer && <Theme.Footer {...content.footer} />}
-    </Theme.Layout>
+      <Theme.Layout settings={settings}>
+        {content.header && <Theme.Header {...content.header} settings={settings} />}
+        {sections.filter(s => !s.hidden).map((section) => {
+          const BlockComponent = Theme.blocks?.[section.type] as React.FC<any>;
+          if (!BlockComponent) return null;
+          return <BlockComponent key={section.id} {...section.data} pageId={page.id} />;
+        })}
+        {content.footer && <Theme.Footer {...content.footer} />}
+      </Theme.Layout>
+
+      {/* Body Script Injection */}
+      {settings.bodyScript && (
+        <script 
+          dangerouslySetInnerHTML={{ __html: settings.bodyScript }}
+        />
+      )}
+    </>
   );
 }
-

@@ -9,6 +9,8 @@ const SECTION_LABELS: Record<string, string> = {
   features: "✨ Features",
   pricing: "💰 Pricing",
   faq: "❓ FAQ",
+  lead_form: "✉️ Lead Form",
+  testimonials: "💬 Testimonials",
 };
 
 interface SectionPanelProps {

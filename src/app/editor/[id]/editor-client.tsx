@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import { getTheme } from "@/components/themes/registry";
-import { PageContent, PageSection, HeroData, FeatureData, PricingData, FAQData, FooterData, SectionType, createDefaultSection, PageSettings } from "@/lib/schema";
+import { getTheme, getAllThemes } from "@/components/themes/registry";
+import { PageContent, PageSection, HeroData, FeatureData, PricingData, FAQData, FooterData, SectionType, createDefaultSection, PageSettings, TestimonialData, LeadFormData, HeaderData } from "@/lib/schema";
 import type { Page } from "@prisma/client";
 import { updatePage, togglePublish } from "@/lib/actions";
-import { Save, Globe, Loader2, ArrowLeft, Plus, Settings2, Palette, X } from "lucide-react";
+import { Save, Globe, Loader2, ArrowLeft, Plus, Settings2, Palette, Sparkles, Code, Layout } from "lucide-react";
 import Link from "next/link";
 
 import { SectionPanel } from "@/components/editor/SectionPanel";
@@ -13,16 +13,22 @@ import { HeroEditor } from "@/components/editor/HeroEditor";
 import { FeaturesEditor } from "@/components/editor/FeaturesEditor";
 import { PricingEditor } from "@/components/editor/PricingEditor";
 import { FAQEditor } from "@/components/editor/FAQEditor";
+import { HeaderEditor } from "@/components/editor/HeaderEditor";
 import { FooterEditor } from "@/components/editor/FooterEditor";
+import { TestimonialsEditor } from "@/components/editor/TestimonialsEditor";
+import { LeadFormEditor } from "@/components/editor/LeadFormEditor";
+import { ThemeGalleryModal } from "@/components/editor/ThemeGalleryModal";
 
 const SECTION_TYPES: { type: SectionType; label: string }[] = [
   { type: "hero", label: "🚀 Hero" },
   { type: "features", label: "✨ Features" },
   { type: "pricing", label: "💰 Pricing" },
   { type: "faq", label: "❓ FAQ" },
+  { type: "testimonials", label: "💬 Testimonials" },
+  { type: "lead-form", label: "📥 Lead Form" },
 ];
 
-export function EditorClient({ initialPage }: { initialPage: Page }) {
+export function EditorClient({ initialPage, isAiEnabled = false }: { initialPage: Page, isAiEnabled?: boolean }) {
   const [content, setContent] = useState<PageContent>(initialPage.content as unknown as PageContent);
   const [settings, setSettings] = useState<PageSettings>(
     (initialPage.settings as unknown as PageSettings) || { accentColor: "#3b82f6", fontFamily: "sans" }
@@ -31,6 +37,7 @@ export function EditorClient({ initialPage }: { initialPage: Page }) {
   const [isPublished, setIsPublished] = useState(initialPage.isPublished);
   const [isSaving, startSaving] = useTransition();
   const [isPublishing, startPublishing] = useTransition();
+  const [isGenerating, setIsGenerating] = useState(false);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [activeTab, setActiveTab] = useState<"content" | "settings">("content");
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
@@ -38,9 +45,35 @@ export function EditorClient({ initialPage }: { initialPage: Page }) {
   const Theme = getTheme(themeId);
   const sections = content.sections || [];
 
+  // --- AI Content Generation ---
+  const handleAIGenerate = async (prompt: string) => {
+    if (!prompt) return;
+    setIsGenerating(true);
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        body: JSON.stringify({ prompt }),
+      });
+      const json = await res.json();
+      if (json.success && json.data?.sections) {
+        setContent({ 
+          sections: json.data.sections,
+          footer: content.footer 
+        });
+      } else {
+        alert("Failed to generate content: " + (json.error || "Unknown error"));
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred during generation.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   // --- Section Management Handlers ---
 
-  const updateSectionData = (sectionId: string, data: HeroData | FeatureData[] | PricingData[] | FAQData[]) => {
+  const updateSectionData = (sectionId: string, data: any) => {
     setContent(prev => ({
       ...prev,
       sections: (prev.sections || []).map(s =>
@@ -97,6 +130,10 @@ export function EditorClient({ initialPage }: { initialPage: Page }) {
     }));
   };
 
+  const updateHeader = (header: HeaderData) => {
+    setContent(prev => ({ ...prev, header }));
+  };
+
   const updateFooter = (footer: FooterData) => {
     setContent(prev => ({ ...prev, footer }));
   };
@@ -125,6 +162,10 @@ export function EditorClient({ initialPage }: { initialPage: Page }) {
         return <PricingEditor data={section.data} onChange={(d) => updateSectionData(section.id, d)} />;
       case "faq":
         return <FAQEditor data={section.data} onChange={(d) => updateSectionData(section.id, d)} />;
+      case "lead-form":
+        return <LeadFormEditor data={section.data as any} onChange={(d) => updateSectionData(section.id, d as any)} />;
+      case "testimonials":
+        return <TestimonialsEditor data={{ items: section.data as any }} onChange={(d) => updateSectionData(section.id, d.items)} />;
       default:
         return <p className="text-xs text-slate-500">Unknown section type.</p>;
     }
@@ -194,23 +235,49 @@ export function EditorClient({ initialPage }: { initialPage: Page }) {
                 <section className="bg-slate-800/30 p-4 rounded-xl border border-slate-800 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs uppercase font-bold tracking-wider text-slate-500 flex items-center gap-2">
-                      <Palette size={14} /> Active Theme
+                      <Layout size={14} /> Active Theme
                     </h3>
                     <span className="text-xs font-mono bg-slate-800 px-2 py-0.5 rounded text-blue-400 capitalize">{themeId}</span>
                   </div>
                   <button
                     onClick={() => setIsThemeModalOpen(true)}
-                    className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-colors border border-slate-700"
+                    className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-colors border border-slate-700 flex items-center justify-center gap-2"
                   >
-                    Change Theme Gallery
+                    <Palette size={14} /> Change Theme
                   </button>
                 </section>
 
-                {/* Section Label */}
+                {/* Section Label & AI Gen */}
                 <div className="flex items-center justify-between pt-2">
                   <h3 className="text-xs uppercase font-bold tracking-wider text-slate-500">Sections</h3>
                   <span className="text-[10px] text-slate-600 font-mono">{sections.length} blocks</span>
                 </div>
+
+                {isAiEnabled && (
+                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 flex flex-col gap-2">
+                    <p className="text-xs text-blue-400 font-medium flex items-center gap-2">
+                      <Sparkles size={14} /> Generate with AI
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        id="ai-prompt"
+                        placeholder="e.g. A real estate agent in NY..."
+                        className="flex-1 bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:border-blue-500 outline-none"
+                      />
+                      <button
+                        disabled={isGenerating}
+                        onClick={() => {
+                          const input = document.getElementById('ai-prompt') as HTMLInputElement;
+                          handleAIGenerate(input.value);
+                        }}
+                        className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors"
+                      >
+                        {isGenerating ? <Loader2 size={14} className="animate-spin" /> : "Gen"}
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Dynamic Section Panels */}
                 {sections.map((section, index) => (
@@ -253,6 +320,25 @@ export function EditorClient({ initialPage }: { initialPage: Page }) {
                   )}
                 </div>
 
+                {/* Header Editor */}
+                {content.header ? (
+                  <div className="bg-slate-800/30 p-4 rounded-xl border border-slate-800 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs uppercase font-bold tracking-wider text-slate-500 flex items-center gap-2">
+                         Header
+                      </h3>
+                    </div>
+                    <HeaderEditor data={content.header} onChange={updateHeader} />
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => updateHeader({ logoText: initialPage.title || "My Brand", links: [] })}
+                    className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-semibold transition-colors border border-slate-700 border-dashed flex items-center justify-center gap-2 mt-4"
+                  >
+                    <Plus size={16} /> Add Header Section
+                  </button>
+                )}
+
                 {/* Footer Editor */}
                 {content.footer && (
                   <FooterEditor data={content.footer} onChange={updateFooter} />
@@ -262,7 +348,7 @@ export function EditorClient({ initialPage }: { initialPage: Page }) {
               <div className="space-y-6">
                 <section className="bg-slate-800/30 p-4 rounded-xl border border-slate-800">
                   <h3 className="text-xs uppercase font-bold tracking-wider text-slate-500 mb-4 flex items-center gap-2">
-                    <Palette size={14} /> Global Styling
+                    <Palette size={14} /> Styling
                   </h3>
                   
                   <div className="space-y-4">
@@ -303,11 +389,37 @@ export function EditorClient({ initialPage }: { initialPage: Page }) {
 
                 <section className="bg-slate-800/30 p-4 rounded-xl border border-slate-800">
                   <h3 className="text-xs uppercase font-bold tracking-wider text-slate-500 mb-4 flex items-center gap-2">
+                    <Code size={14} /> Custom Scripts
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Head Scripts</label>
+                      <textarea 
+                        value={settings.headScript || ""}
+                        onChange={(e) => setSettings(prev => ({ ...prev, headScript: e.target.value }))}
+                        className="w-full bg-slate-900 border border-slate-800 rounded px-3 py-2 text-[10px] text-blue-300 font-mono min-h-[100px]"
+                        placeholder="<!-- GTM, Meta Pixel, etc. -->"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Body Scripts</label>
+                      <textarea 
+                        value={settings.bodyScript || ""}
+                        onChange={(e) => setSettings(prev => ({ ...prev, bodyScript: e.target.value }))}
+                        className="w-full bg-slate-900 border border-slate-800 rounded px-3 py-2 text-[10px] text-blue-300 font-mono min-h-[100px]"
+                        placeholder="<!-- Analytics, Chat Widgets, etc. -->"
+                      />
+                    </div>
+                  </div>
+                </section>
+
+                <section className="bg-slate-800/30 p-4 rounded-xl border border-slate-800">
+                  <h3 className="text-xs uppercase font-bold tracking-wider text-slate-500 mb-4 flex items-center gap-2">
                     <Settings2 size={14} /> Site Configuration
                   </h3>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Site Name</label>
+                      <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Site Name / SEO Title</label>
                       <input 
                         type="text"
                         value={settings.siteName || ""}
@@ -342,10 +454,11 @@ export function EditorClient({ initialPage }: { initialPage: Page }) {
             {/* Dynamic Rendering Engine */}
             <div className="w-full">
               <Theme.Layout settings={settings}>
+                {content.header && <Theme.Header {...content.header} settings={settings} />}
                 {sections.filter(s => !s.hidden).map((section) => {
-                  const BlockComponent = Theme.blocks?.[section.type] as React.FC<Record<string, unknown>>;
+                  const BlockComponent = Theme.blocks?.[section.type] as React.FC<any>;
                   if (!BlockComponent) return null;
-                  return <BlockComponent key={section.id} {...section.data} />;
+                  return <BlockComponent key={section.id} {...section.data} pageId={initialPage.id} />;
                 })}
                 {content.footer && <Theme.Footer {...content.footer} />}
               </Theme.Layout>
@@ -354,6 +467,14 @@ export function EditorClient({ initialPage }: { initialPage: Page }) {
         </section>
       </div>
 
+      {/* Theme Gallery Modal */}
+      <ThemeGalleryModal 
+        isOpen={isThemeModalOpen}
+        onClose={() => setIsThemeModalOpen(false)}
+        currentThemeId={themeId}
+        onSelectTheme={setThemeId}
+      />
+
       {/* Scrollbar styling */}
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
@@ -361,130 +482,6 @@ export function EditorClient({ initialPage }: { initialPage: Page }) {
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
       `}} />
-
-      {/* Theme Gallery Modal */}
-      {isThemeModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-slate-800 shrink-0">
-              <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Palette className="text-blue-500" /> Theme Gallery
-                </h2>
-                <p className="text-sm text-slate-400 mt-1">Select a theme to instantly apply it to your page.</p>
-              </div>
-              <button 
-                onClick={() => setIsThemeModalOpen(false)}
-                className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-full transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Modal Body - Theme Grid */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                
-                {/* Modern Theme Card */}
-                <button 
-                  onClick={() => { setThemeId('modern'); setIsThemeModalOpen(false); }}
-                  className={`group text-left rounded-xl overflow-hidden border-2 transition-all ${themeId === 'modern' ? 'border-blue-500 shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)]' : 'border-slate-800 hover:border-slate-600'}`}
-                >
-                  <div className="h-40 bg-white p-4 flex flex-col gap-3 opacity-90 group-hover:opacity-100 transition-opacity">
-                    <div className="h-3 w-full bg-slate-100 rounded-sm flex items-center px-2 justify-between">
-                      <div className="w-6 h-1.5 bg-blue-500 rounded-full"></div>
-                      <div className="flex gap-1"><div className="w-3 h-1.5 bg-slate-200"></div><div className="w-3 h-1.5 bg-slate-200"></div></div>
-                    </div>
-                    <div className="flex-1 bg-blue-50 rounded-lg flex flex-col items-center justify-center p-2 border border-blue-100">
-                      <div className="w-24 h-2 bg-slate-800 rounded-full mb-2"></div>
-                      <div className="w-16 h-1.5 bg-slate-400 rounded-full"></div>
-                    </div>
-                  </div>
-                  <div className={`p-4 bg-slate-900 border-t ${themeId === 'modern' ? 'border-blue-500/30 bg-blue-950/20' : 'border-slate-800'}`}>
-                    <div className="flex items-center justify-between mb-1">
-                      <div className={`text-base font-bold ${themeId === 'modern' ? 'text-blue-400' : 'text-white'}`}>Modern</div>
-                      {themeId === 'modern' && <span className="text-[10px] font-bold uppercase bg-blue-500 text-white px-2 py-0.5 rounded-full">Active</span>}
-                    </div>
-                    <div className="text-xs text-slate-400 font-sans">Clean, corporate, and highly versatile.</div>
-                  </div>
-                </button>
-
-                {/* Minimalist Theme Card */}
-                <button 
-                  onClick={() => { setThemeId('minimalist'); setIsThemeModalOpen(false); }}
-                  className={`group text-left rounded-xl overflow-hidden border-2 transition-all ${themeId === 'minimalist' ? 'border-blue-500 shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)]' : 'border-slate-800 hover:border-slate-600'}`}
-                >
-                  <div className="h-40 bg-[#FDFDFD] p-4 flex flex-col gap-3 opacity-90 group-hover:opacity-100 transition-opacity">
-                    <div className="h-3 w-full border-b border-stone-200 flex justify-between px-2 items-center">
-                      <div className="w-10 h-0.5 bg-stone-800"></div>
-                      <div className="w-6 h-0.5 bg-stone-300"></div>
-                    </div>
-                    <div className="flex-1 flex flex-col mt-4 px-2">
-                      <div className="w-20 h-3 bg-stone-900 mb-2"></div>
-                      <div className="w-14 h-1.5 bg-stone-300"></div>
-                      <div className="w-12 h-5 border border-stone-900 mt-auto"></div>
-                    </div>
-                  </div>
-                  <div className={`p-4 bg-slate-900 border-t ${themeId === 'minimalist' ? 'border-blue-500/30 bg-blue-950/20' : 'border-slate-800'}`}>
-                    <div className="flex items-center justify-between mb-1">
-                      <div className={`text-base font-bold ${themeId === 'minimalist' ? 'text-blue-400' : 'text-white'}`}>Minimalist</div>
-                      {themeId === 'minimalist' && <span className="text-[10px] font-bold uppercase bg-blue-500 text-white px-2 py-0.5 rounded-full">Active</span>}
-                    </div>
-                    <div className="text-xs text-slate-400 font-mono">Stark, spaced out, monochrome styling.</div>
-                  </div>
-                </button>
-
-                {/* Bold Theme Card */}
-                <button 
-                  onClick={() => { setThemeId('bold'); setIsThemeModalOpen(false); }}
-                  className={`group text-left rounded-xl overflow-hidden border-2 transition-all ${themeId === 'bold' ? 'border-blue-500 shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)]' : 'border-slate-800 hover:border-slate-600'}`}
-                >
-                  <div className="h-40 bg-zinc-950 p-4 flex flex-col gap-2 relative overflow-hidden opacity-90 group-hover:opacity-100 transition-opacity">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-24 bg-orange-600/30 blur-2xl rounded-full"></div>
-                    <div className="h-3 w-full border-b border-zinc-800 flex justify-between z-10 px-2 items-center">
-                      <div className="w-8 h-1 bg-white"></div>
-                      <div className="w-8 h-0.5 bg-zinc-700"></div>
-                    </div>
-                    <div className="flex-1 flex flex-col items-center justify-center z-10">
-                      <div className="w-32 h-4 bg-white skew-x-[-10deg] mb-2"></div>
-                      <div className="w-20 h-2 bg-zinc-500 mb-4"></div>
-                      <div className="w-16 h-4 bg-orange-600 border border-white skew-x-[-10deg]"></div>
-                    </div>
-                  </div>
-                  <div className={`p-4 bg-slate-900 border-t ${themeId === 'bold' ? 'border-blue-500/30 bg-blue-950/20' : 'border-slate-800'}`}>
-                    <div className="flex items-center justify-between mb-1">
-                      <div className={`text-base font-bold ${themeId === 'bold' ? 'text-blue-400' : 'text-white'}`}>Bold</div>
-                      {themeId === 'bold' && <span className="text-[10px] font-bold uppercase bg-blue-500 text-white px-2 py-0.5 rounded-full">Active</span>}
-                    </div>
-                    <div className="text-xs text-slate-400 uppercase tracking-widest">High Impact & Dark</div>
-                  </div>
-                </button>
-
-                {/* More Themes Coming Soon Placeholder */}
-                <div className="group rounded-xl overflow-hidden border-2 border-dashed border-slate-800 flex flex-col items-center justify-center p-6 text-center opacity-50">
-                  <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center mb-3">
-                    <Plus className="text-slate-500" />
-                  </div>
-                  <h3 className="text-white font-bold text-sm mb-1">More Themes</h3>
-                  <p className="text-xs text-slate-500">Coming soon</p>
-                </div>
-
-              </div>
-            </div>
-            
-            {/* Modal Footer */}
-            <div className="p-6 border-t border-slate-800 bg-slate-900/50 flex justify-end shrink-0">
-              <button 
-                onClick={() => setIsThemeModalOpen(false)}
-                className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-colors"
-              >
-                Close Gallery
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

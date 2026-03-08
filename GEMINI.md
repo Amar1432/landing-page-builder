@@ -1,25 +1,27 @@
 # SaaS Landing Page Builder
 
-This project is a headless, structured-content SaaS landing page builder with swappable themes. It allows users to create and manage landing pages by defining structured content (Hero, Features, Pricing, FAQ, Footer) and applying different visual themes.
+This project is a headless, structured-content SaaS landing page builder with swappable themes. It allows users to create and manage landing pages by defining structured content (Hero, Features, Pricing, FAQ, Testimonials, Lead Form) and applying different visual themes.
 
 ## Project Overview
 
 - **Purpose**: A platform for building and hosting structured SaaS landing pages.
 - **Architecture**: Next.js App Router with React 19 and TypeScript.
-- **State**: Phase 6 Complete. The project has a fully functional editor with dynamic section management, drag-and-drop reordering, and theme swapping.
+- **State**: Phase 8 in progress. Fully functional editor with dynamic section management, drag-and-drop reordering, theme swapping, global settings, and Clerk authentication.
 - **Key Technologies**:
     - **Framework**: Next.js 16.1.6 (App Router)
     - **Styling**: Tailwind CSS 4
     - **Database**: PostgreSQL with Prisma ORM 7.4.2
-    - **Validation**: Zod (for dynamic section content)
+    - **Validation**: Zod (for dynamic section content and leads)
     - **Runtime**: Bun
     - **Interactivity**: Lucide icons, Drag-and-drop section management
+    - **Authentication**: Clerk Auth
 
 ## Building and Running
 
 ### Prerequisites
 - [Bun](https://bun.sh/) installed.
-- PostgreSQL database (or a connection string in `.env`).
+- PostgreSQL database.
+- Clerk API keys (set in `.env`).
 
 ### Commands
 - **Development Server**: `bun dev` - Starts the development server at http://localhost:3000.
@@ -34,22 +36,24 @@ This project is a headless, structured-content SaaS landing page builder with sw
 
 ## Project Structure
 
-- `prisma/`: Contains `schema.prisma` and database configuration.
+- `prisma/`: Contains `schema.prisma` (Models: `User`, `Page`, `Lead`).
 - `src/app/`: Next.js App Router directory for layouts and pages.
-- `src/lib/`: Core utilities and schemas.
+    - `[slug]/`: Dynamic route for published landing pages.
+    - `dashboard/`: User dashboard for managing pages and leads.
+    - `editor/`: Visual builder interface.
+- `src/lib/`: Core utilities, server actions, and schemas.
     - `prisma.ts`: Prisma Client singleton.
-    - `schema.ts`: Zod schemas for `PageContent` (Hero, Features, Pricing, etc.).
-    - `actions.ts`: Server actions for updating and publishing pages.
-- `public/`: Static assets (images, icons, etc.).
+    - `schema.ts`: Zod schemas for `PageContent`, `PageSettings`, `LeadForm`, etc.
+    - `actions.ts`: Server actions for CRUD operations on pages and leads.
+- `src/components/themes/`: Theme Registry and individual theme implementations (`modern`, `minimalist`, `bold`).
 
 ## Development Conventions
 
-- **Content Validation**: All page content must conform to the `PageContentSchema` defined in `src/lib/schema.ts`.
+- **Content Validation**: All page content and settings must conform to Zod schemas in `src/lib/schema.ts`.
 - **Database Access**: Use the Prisma client exported from `src/lib/prisma.ts`.
-- **Server Actions**: Use server actions in `src/lib/actions.ts` for all database mutations from the client.
-- **Publishing**: Pages are only accessible at `/[slug]` if the `isPublished` flag is set to `true`. This can be toggled from the Editor.
-- **Type Safety**: Maintain strict TypeScript typing. Ensure `PageContent` type is used when handling page data.
-- **Components**: Follow a component-based architecture in `src/app`. Future phases will introduce a `ThemeRegistry` for swappable UI components.
+- **Server Actions**: Use server actions in `src/lib/actions.ts` for all database mutations.
+- **Authentication**: Protected routes (`/dashboard`, `/editor`) require Clerk authentication.
+- **Leads**: Lead capture forms support optional fields (email/message) to accommodate diverse use cases like real estate (name + phone priority).
 
 ## Roadmap (Current Progress)
 
@@ -59,6 +63,7 @@ This project is a headless, structured-content SaaS landing page builder with sw
 - [x] **Phase 4: Publishing & Edge Delivery**: Dynamic routing, ISR, and metadata.
 - [x] **Phase 5: Dynamic Sections Refactor**: Discriminated union schemas for flexible page blocks.
 - [x] **Phase 6: Enhanced Editor & Section Management**: Drag-and-drop, section CRUD, and refined UX.
-- [ ] **Phase 7: Additional Themes & Polish**: New themes, global settings, and user auth.
+- [x] **Phase 7: Additional Themes & Polish**: New themes, global settings, and Clerk auth.
+- [x] **Phase 8: Product Features for Real Usage**: Lead capture, script injection, testimonials, image uploads, and AI generation.
 
 Refer to `task.md` for a detailed task list and progress tracking.

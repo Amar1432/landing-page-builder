@@ -23,18 +23,18 @@
 - [x] Bold theme, global settings, Clerk auth, create/delete pages
 - [x] Theme preview thumbnails → Theme Gallery Modal (scalable)
 
-## Phase 8: Product Features for Real Usage
-- [ ] 1. Prisma schema: Add `Lead` model + `headScript`/`bodyScript` to `Page`
-- [ ] 2. Zod schema: Add `LeadFormSchema`, `TestimonialSchema`, `ScriptInjectionSchema`
-- [ ] 3. Theme metadata: Add `ThemeMeta` + `ThemeEntry`, refactor registry
-- [ ] 4. Theme Gallery Modal: Refactor to data-driven from `getAllThemes()`
-- [ ] 5. Page Duplication: `duplicatePage` action + dashboard UI
-- [ ] 6. Script Injection: `ScriptEditor.tsx` + Settings tab integration
-- [ ] 7. Script rendering: Inject scripts into `[slug]/page.tsx`
-- [ ] 8. Demo viewer: `demo-data.ts` + `/demo/[themeId]` route
-- [ ] 9. Lead form block: Add to all 3 themes + `LeadFormEditor.tsx`
-- [ ] 10. Lead API + Dashboard: `POST /api/leads` + `/dashboard/leads` page
-- [ ] 11. Testimonials block: Add to all 3 themes + `TestimonialsEditor.tsx`
-- [ ] 12. Image Upload: Integrate UploadThing + `ImageUpload.tsx` widget
-- [ ] 13. AI Content Generation: API route + "AI Generate" button in editor
-- [ ] 14. Build + lint verification
+## Phase 8: Product Features for Real Usage ✅
+- [x] 1. Prisma schema: Add `Lead` model + `headScript`/`bodyScript` to `Page`
+- [x] 2. Zod schema: Add `LeadFormSchema`, `TestimonialSchema`, `ScriptInjectionSchema`
+- [x] 3. Theme metadata: Add `ThemeMeta` + `ThemeEntry`, refactor registry
+- [x] 4. Theme Gallery Modal: Refactor to data-driven from `getAllThemes()`
+- [x] 5. Page Duplication: `duplicatePage` action + dashboard UI
+- [x] 6. Script Injection: `ScriptEditor.tsx` + Settings tab integration
+- [x] 7. Script rendering: Inject scripts into `[slug]/page.tsx`
+- [x] 8. Demo viewer: `demo-data.ts` + `/demo/[themeId]` route
+- [x] 9. Lead form block: Add to all 3 themes + `LeadFormEditor.tsx` (Supports Real Estate: Name+Phone priority)
+- [x] 10. Lead API + Dashboard: `POST /api/leads` + `/dashboard/leads` page
+- [x] 11. Testimonials block: Add to all 3 themes + `TestimonialsEditor.tsx`
+- [x] 12. Image Upload: Integrate simulated `ImageUpload.tsx` widget
+- [x] 13. AI Content Generation: API route + "AI Generate" button in editor
+- [x] 14. Build + lint verification
