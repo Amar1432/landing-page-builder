@@ -18,6 +18,7 @@ model Page {
   id          String   @id @default(cuid())
   userId      String
   slug        String   @unique // URL slug for the landing page
+  customDomain String? @unique // Future: user-owned custom domain (www.brand.com)
   title       String
   themeId     String   @default("modern") 
   content     Json     // Stores the structured PageContent JSON

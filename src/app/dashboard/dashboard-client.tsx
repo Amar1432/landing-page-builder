@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import Link from "next/link";
 import { PlusCircle, Search, LayoutTemplate, Trash2, ExternalLink, Edit2, Loader2, Copy, Mail } from "lucide-react";
 import { createPage, deletePage, duplicatePage } from "@/lib/actions";
@@ -18,7 +18,12 @@ export function DashboardClient({ initialPages, userId, userName }: DashboardCli
   const [isCreating, startCreating] = useTransition();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
+  const [host, setHost] = useState("localhost:3000");
   const router = useRouter();
+
+  useEffect(() => {
+    setHost(window.location.host);
+  }, []);
 
   const filteredPages = initialPages.filter(page => 
     page.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -111,7 +116,7 @@ export function DashboardClient({ initialPages, userId, userName }: DashboardCli
                 <div>
                   <h3 className="font-bold text-slate-900 text-lg leading-tight">{page.title}</h3>
                   <div className="flex items-center gap-3 text-sm text-slate-500 mt-1.5">
-                    <code className="bg-slate-100 px-1.5 py-0.5 rounded text-xs text-slate-600 font-mono">/{page.slug}</code>
+                    <code className="bg-slate-100 px-1.5 py-0.5 rounded text-xs text-slate-600 font-mono">{page.slug}.{host}</code>
                     <span className="text-slate-300">•</span>
                     <span className="capitalize text-xs font-semibold text-slate-500 tracking-wide">{page.themeId}</span>
                     <span className="text-slate-300">•</span>
@@ -143,14 +148,15 @@ export function DashboardClient({ initialPages, userId, userName }: DashboardCli
                 >
                   {duplicatingId === page.id ? <Loader2 size={18} className="animate-spin" /> : <Copy size={18} />}
                 </button>
-                <Link 
-                  href={`/${page.slug}`}
+                <a 
+                  href={`//${page.slug}.${host}`}
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-all"
                 >
                   <ExternalLink size={16} />
                   View
-                </Link>
+                </a>
                 <button 
                   onClick={() => handleDelete(page.id, page.title)}
                   disabled={deletingId === page.id}

@@ -3,9 +3,13 @@ import { getTheme } from "@/components/themes/registry";
 import { PageContent, PageSettings } from "@/lib/schema";
 import { prisma } from "@/lib/prisma";
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const page = await prisma.page.findUnique({ where: { slug } });
+export async function generateMetadata({ params }: { params: Promise<{ domain: string }> }) {
+  const { domain } = await params;
+  
+  const page = domain.includes(".") 
+    ? await prisma.page.findUnique({ where: { customDomain: domain } })
+    : await prisma.page.findUnique({ where: { slug: domain } });
+    
   if (!page) return { title: "Not Found" };
   
   const content = page.content as unknown as PageContent;
@@ -17,9 +21,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default async function PublishedPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const page = await prisma.page.findUnique({ where: { slug } });
+export default async function PublishedPage({ params }: { params: Promise<{ domain: string }> }) {
+  const { domain } = await params;
+
+  const page = domain.includes(".") 
+    ? await prisma.page.findUnique({ where: { customDomain: domain } })
+    : await prisma.page.findUnique({ where: { slug: domain } });
+
   if (!page || !page.isPublished) notFound();
 
   const Theme = getTheme(page.themeId);

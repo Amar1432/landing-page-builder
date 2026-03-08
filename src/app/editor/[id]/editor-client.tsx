@@ -4,8 +4,8 @@ import React, { useState, useTransition } from "react";
 import { getTheme, getAllThemes } from "@/components/themes/registry";
 import { PageContent, PageSection, HeroData, FeatureData, PricingData, FAQData, FooterData, SectionType, createDefaultSection, PageSettings, TestimonialData, LeadFormData, HeaderData } from "@/lib/schema";
 import type { Page } from "@prisma/client";
-import { updatePage, togglePublish } from "@/lib/actions";
-import { Save, Globe, Loader2, ArrowLeft, Plus, Settings2, Palette, Sparkles, Code, Layout } from "lucide-react";
+import { updatePage, togglePublish, updateCustomDomain } from "@/lib/actions";
+import { Save, Globe, Loader2, ArrowLeft, Plus, Settings2, Palette, Sparkles, Code, Layout, Link as LinkIcon } from "lucide-react";
 import Link from "next/link";
 
 import { SectionPanel } from "@/components/editor/SectionPanel";
@@ -41,6 +41,10 @@ export function EditorClient({ initialPage, isAiEnabled = false }: { initialPage
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [activeTab, setActiveTab] = useState<"content" | "settings">("content");
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+  const [customDomain, setCustomDomain] = useState(initialPage.customDomain || "");
+  const [isConnectingDomain, startConnectingDomain] = useTransition();
+  const [domainError, setDomainError] = useState("");
+  const [domainSuccess, setDomainSuccess] = useState(false);
 
   const Theme = getTheme(themeId);
   const sections = content.sections || [];
@@ -146,8 +150,26 @@ export function EditorClient({ initialPage, isAiEnabled = false }: { initialPage
 
   const handlePublish = () => {
     startPublishing(async () => {
-      const newStatus = await togglePublish(initialPage.id, isPublished);
-      setIsPublished(newStatus);
+      try {
+        const newStatus = await togglePublish(initialPage.id, isPublished);
+        setIsPublished(newStatus);
+      } catch (e) {
+        console.error("Failed to publish", e);
+      }
+    });
+  };
+
+  const handleConnectDomain = () => {
+    setDomainError("");
+    setDomainSuccess(false);
+    startConnectingDomain(async () => {
+      try {
+        await updateCustomDomain(initialPage.id, customDomain === "" ? null : customDomain);
+        setDomainSuccess(true);
+        setTimeout(() => setDomainSuccess(false), 3000);
+      } catch (e: any) {
+        setDomainError(e.message || "Failed to update custom domain");
+      }
     });
   };
 
@@ -428,6 +450,33 @@ export function EditorClient({ initialPage, isAiEnabled = false }: { initialPage
                         placeholder="My SaaS Website"
                       />
                     </div>
+                    <div className="space-y-2 pt-4 border-t border-slate-800">
+                      <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider flex items-center gap-2">
+                        <LinkIcon size={12} /> Custom Domain
+                      </label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="text"
+                          value={customDomain}
+                          onChange={(e) => {
+                            setCustomDomain(e.target.value);
+                            setDomainError("");
+                          }}
+                          className="flex-1 bg-slate-900 border border-slate-800 rounded px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500"
+                          placeholder="www.mybrand.com"
+                        />
+                        <button
+                          onClick={handleConnectDomain}
+                          disabled={isConnectingDomain}
+                          className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded transition disabled:opacity-50 flex items-center justify-center min-w-[80px]"
+                        >
+                          {isConnectingDomain ? <Loader2 size={14} className="animate-spin" /> : "Connect"}
+                        </button>
+                      </div>
+                      {domainError && <p className="text-[10px] text-red-500 font-bold">{domainError}</p>}
+                      {domainSuccess && <p className="text-[10px] text-emerald-500 font-bold">Domain updated successfully!</p>}
+                      <p className="text-[10px] text-slate-500 mt-1">Requires DNS configuration. Enter an empty value to disconnect.</p>
+                    </div>
                   </div>
                 </section>
               </div>
@@ -447,7 +496,7 @@ export function EditorClient({ initialPage, isAiEnabled = false }: { initialPage
                 <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
               </div>
               <div className="ml-4 text-[10px] text-slate-400 font-mono flex-1 text-center bg-white py-1 rounded-sm mx-8">
-                preview.saasbuilder.com/{initialPage.slug}
+                {initialPage.slug}.saasbuilder.com
               </div>
             </div>
 

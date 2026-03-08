@@ -1,5 +1,25 @@
 import { z } from 'zod';
 
+export const RESERVED_SLUGS = [
+  'dashboard', 'editor', 'api', 'admin', 'www', 'settings', 'demo', 'sites', 'preview', 'static'
+];
+
+export const SlugSchema = z.string()
+  .min(3, "Slug must be at least 3 characters")
+  .max(63, "Slug cannot exceed 63 characters")
+  .regex(/^[a-z0-9-]+$/, "Slug must contain only lowercase letters, numbers, and hyphens.")
+  .refine(slug => !RESERVED_SLUGS.includes(slug), {
+    message: "This namespace is reserved and cannot be used as a subdomain."
+  });
+
+export const CustomDomainSchema = z.string()
+  .min(3, "Domain must be at least 3 characters")
+  .max(253, "Domain cannot exceed 253 characters")
+  .regex(/^(?:[-A-Za-z0-9]+\.)+[A-Za-z]{2,}$/, "Invalid domain format (e.g., example.com)")
+  .refine(domain => !domain.startsWith('http://') && !domain.startsWith('https://'), {
+    message: "Please remove http:// or https:// from the domain."
+  });
+
 export const HeroSchema = z.object({
   headline: z.string().min(1, 'Headline is required'),
   subheadline: z.string().optional(),
